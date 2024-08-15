@@ -68,7 +68,7 @@ const persistStore = async (db: Db, store: Store) => {
 const timeout = setTimeout(() => {
   console.error(`program timed out`)
   process.exit(1)
-}, 90e3)
+}, 180e3)
 
 //--------------------------------------------------------------
 // Run program
