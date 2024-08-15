@@ -26,6 +26,11 @@ const main = async () => {
       process.exitCode = 1
       console.error(`${store._id}: error processing store`)
     })
+
+    await persistStore(db, store).catch(() => {
+      process.exitCode = 1
+      console.error(`${store._id}: error persisting store`)
+    })
   }
 }
 
@@ -40,8 +45,6 @@ const processStore = async (db: Db, store: Store): Promise<void> => {
 
     store.state = state
     await notify(store)
-
-    await persistStore(db, store)
   } else {
     console.log(`${store._id}: state was not updated`)
   }
@@ -65,7 +68,7 @@ const persistStore = async (db: Db, store: Store) => {
 const timeout = setTimeout(() => {
   console.error(`program timed out`)
   process.exit(1)
-}, 90e3)
+}, 180e3)
 
 //--------------------------------------------------------------
 // Run program

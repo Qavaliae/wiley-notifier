@@ -3,9 +3,10 @@ import { ObjectId } from 'mongodb'
 export interface Store {
   _id: ObjectId
   enabled: boolean
+  entry: string
   tracker: string
   submissionId: string
-  cookie: string
+  cookies: any
   state?: State
   listeners: Listener[]
 }
