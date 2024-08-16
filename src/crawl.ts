@@ -32,7 +32,7 @@ export const crawl = async (store: Store): Promise<State> => {
 
   // Go to entry
 
-  await page.bringToFront();
+  await page.bringToFront()
   await page.goto(store.entry, { waitUntil: 'networkidle2' })
   await page.waitForSelector('xpath///h1[text()="My Submissions"]')
 
@@ -98,7 +98,7 @@ const persistCookies = async (store: Store, browser: Browser) => {
   let cookies = []
 
   for (const page of await browser.pages()) {
-    cookies.push(...await page.cookies())
+    cookies.push(...(await page.cookies()))
   }
 
   store.cookies = cookies

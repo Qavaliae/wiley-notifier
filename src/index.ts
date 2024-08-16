@@ -3,7 +3,7 @@ import { Db, MongoClient } from 'mongodb'
 import { config } from './config'
 import { crawl } from './crawl'
 import { notify } from './notify'
-import { Store } from './types'
+import { State, Store } from './types'
 import { clearTimeout } from 'timers'
 
 const client = new MongoClient(config.db.uri)
@@ -22,13 +22,9 @@ const main = async () => {
 
   // Process stores
   for (const store of stores) {
-    await processStore(db, store).catch(async () => {
-      // Retry once
-      console.info(`${store._id}: retry processing store`)
-      await processStore(db, store).catch(() => {
-        process.exitCode = 1
-        console.error(`${store._id}: error processing store`)
-      })
+    await processStore(store).catch(() => {
+      process.exitCode = 1
+      console.error(`${store._id}: error processing store`)
     })
 
     await persistStore(db, store).catch(() => {
@@ -39,9 +35,9 @@ const main = async () => {
 }
 
 // Run processing logic for a specific store
-const processStore = async (db: Db, store: Store): Promise<void> => {
+const processStore = async (store: Store): Promise<void> => {
   // Retrieve current state
-  const state = await crawl(store)
+  const state = await optimisticCrawl(store, 10)
 
   // If state was updated, notify and persist store with new state
   if (!lodash.isEqual(state, store.state)) {
@@ -52,6 +48,22 @@ const processStore = async (db: Db, store: Store): Promise<void> => {
   } else {
     console.log(`${store._id}: state was not updated`)
   }
+}
+
+// Crawl state with retries
+const optimisticCrawl = async (
+  store: Store,
+  maxRetries: number = 3,
+  retry: number = 0,
+): Promise<State> => {
+  console.log(`${store._id}: crawling state...${retry > 0 ? ' (retry)' : ''}`)
+  return await crawl(store).catch(async (e) => {
+    if (retry == maxRetries - 1) {
+      throw e
+    }
+
+    return await optimisticCrawl(store, maxRetries, retry + 1)
+  })
 }
 
 // Retrieve enabled stores in their current states
