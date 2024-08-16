@@ -22,9 +22,13 @@ const main = async () => {
 
   // Process stores
   for (const store of stores) {
-    await processStore(db, store).catch(() => {
-      process.exitCode = 1
-      console.error(`${store._id}: error processing store`)
+    await processStore(db, store).catch(async () => {
+      // Retry once
+      console.info(`${store._id}: retry processing store`)
+      await processStore(db, store).catch(() => {
+        process.exitCode = 1
+        console.error(`${store._id}: error processing store`)
+      })
     })
 
     await persistStore(db, store).catch(() => {

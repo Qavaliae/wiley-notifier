@@ -14,7 +14,7 @@ export const crawl = async (store: Store): Promise<State> => {
   const [page] = await browser.pages()
   const connectPage = await browser.newPage()
 
-  await disableTimeout(browser)
+  await configureTimeout(browser)
 
   // Restore cookies
 
@@ -32,6 +32,7 @@ export const crawl = async (store: Store): Promise<State> => {
 
   // Go to entry
 
+  await page.bringToFront();
   await page.goto(store.entry, { waitUntil: 'networkidle2' })
   await page.waitForSelector('xpath///h1[text()="My Submissions"]')
 
@@ -73,9 +74,9 @@ export const crawl = async (store: Store): Promise<State> => {
   }
 }
 
-const disableTimeout = async (browser: Browser) => {
+const configureTimeout = async (browser: Browser) => {
   for (const page of await browser.pages()) {
-    page.setDefaultTimeout(0)
+    page.setDefaultTimeout(20e3)
   }
 }
 
