@@ -74,9 +74,10 @@ export const crawl = async (store: Store): Promise<State> => {
   }
 }
 
+let i = 0;
 const configureTimeout = async (browser: Browser) => {
   for (const page of await browser.pages()) {
-    page.setDefaultTimeout(20e3)
+    page.setDefaultTimeout(i++ == 0 ? 1e3 : 20e3)
   }
 }
 
